@@ -1,38 +1,144 @@
+/* Set up the main container to occupy the full viewport height */
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  height: 100vh;
+  /* Full height of the viewport */
+}
+
+/* Style for the list container on the left */
+.iframe-list-container {
+  width: 20%;
+  margin-right: 20px;
+  padding: 10px;
+  border-right: 2px solid #ccc;
+  /* Vertical line between the list and canvas */
+  height: 100%;
+  /* Full height */
+  box-sizing: border-box;
+  /* Includes padding and border in the element's width */
+  overflow-y: auto;
+  /* Adds scroll if the list is too long */
+}
+
+/* Styles for the list items */
+.iframe-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.iframe-item {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  /* Smooth background color change on hover */
+}
+
+.iframe-item:hover {
+  background-color: #e0e0e0;
+  /* Slightly darker on hover */
+}
+
+/* Styles for the canvas container on the right */
+.canvas-container {
+  flex-grow: 1;
+  padding: 10px;
+}
+
+/* Styles for the grid layout container */
+.layout {
+  min-height: 600px;
+  /* Adjusted height for the droppable area */
+  background-color: #fafafa;
+  /* Light grey background */
+}
+
+/* Styles for the iframe wrapper */
+.iframe-wrapper {
+  background: #fff;
+  /* White background for iframes */
+  border: 1px solid #ddd;
+  /* Border around iframe */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow for depth */
+  transition: all 0.3s ease;
+  /* Smooth transition for any changes */
+  overflow: hidden;
+  /* Ensures the content is clipped to the bounds */
+  display: flex;
+  /* Flex container to center iframe content */
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  /* Center iframe horizontally */
+  align-items: center;
+  /* Center iframe vertically */
+  position: relative;
+  /* Add position relative to allow absolute positioning of the drag handle */
 }
 
-.App-link {
-  color: #61dafb;
+/* Style for the iframe element itself */
+.iframe-wrapper iframe {
+  width: 100%;
+  /* Full width of the wrapper */
+  height: 100%;
+  /* Full height of the wrapper */
+  border: none;
+  /* Remove the default iframe border */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Style for the drag handle on top of the iframe */
+.drag-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #ddd;
+  padding: 4px;
+  text-align: center;
+  cursor: grab;
+  z-index: 10;
+  /* Ensure it's above the iframe */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  .App {
+    flex-direction: column;
+    /* Stack elements vertically for smaller screens */
   }
-  to {
-    transform: rotate(360deg);
+
+  .iframe-list-container {
+    width: 100%;
+    border-right: none;
+    border-bottom: 2px solid #ccc;
+    /* Horizontal line for smaller screens */
   }
+
+  .canvas-container {
+    width: 100%;
+  }
+
+  .iframe-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Style for the drag handle on top of the iframe for smaller screens */
+  .drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #ddd;
+    padding: 4px;
+    text-align: center;
+    cursor: grab;
+    z-index: 10;
+    /* Ensure it's above the iframe */
+  }
+
+  /* Add more styles as needed for smaller screens */
 }
