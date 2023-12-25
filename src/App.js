@@ -14,15 +14,17 @@ const extractElementsData1 = (htmlContent) => {
 
   Array.from(doc.body.childNodes).forEach((node, index) => {
     if (node.nodeType === Node.ELEMENT_NODE) {
-      const tag = node.tagName.toLowerCase();
-      const label = `${tag}-${index}`;
+      const openingTag = node.outerHTML.split('>')[0] + '>'; // Store the complete opening tag
+      const closingTag = `</${node.tagName.toLowerCase()}>`; // Store the complete closing tag
+      const label = `${node.tagName.toLowerCase()}-${index}`;
       const value = node.innerHTML; // Store the content inside the HTML tags
-      elementsData.push({ label, value, tag }); // Store the HTML tag as 'tag'
+      elementsData.push({ label, openingTag, closingTag, value }); // Store both opening and closing tags
     }
   });
 
   return elementsData;
 };
+
 
 const extractElementsData = (htmlContent) => {
   const parser = new DOMParser();
@@ -78,23 +80,20 @@ const IframeEditForm = ({ iframe, onSave, onClose }) => {
 
     // Loop through elementsData and replace corresponding content in updatedContent
     elementsData.forEach((el) => {
-      const tag = el.tag;
+      const openingTag = el.openingTag;
+      const closingTag = el.closingTag;
       const value = el.value;
-
-      // Create the start and end tags based on the 'tag'
-      const startTag = `<${tag}>`;
-      const endTag = `</${tag}>`;
-      console.log(startTag, endTag);
-      // Find the indices of the start and end tags
-      const startIndex = updatedContent.indexOf(startTag);
-      const endIndex = updatedContent.indexOf(endTag, startIndex);
+      console.log(openingTag, closingTag, value);
+      // Find the indices of the opening and closing tags
+      const startIndex = updatedContent.indexOf(openingTag);
+      const endIndex = updatedContent.indexOf(closingTag, startIndex);
       console.log(startIndex, endIndex);
       if (startIndex !== -1 && endIndex !== -1) {
         // Extract the content between the tags
-        const contentBetweenTags = updatedContent.substring(startIndex + startTag.length, endIndex);
+        //const contentBetweenTags = updatedContent.substring(startIndex + openingTag.length, endIndex);
 
         // Replace the content between the tags with the new 'value'
-        updatedContent = updatedContent.substring(0, startIndex + startTag.length) +
+        updatedContent = updatedContent.substring(0, startIndex + openingTag.length) +
           value +
           updatedContent.substring(endIndex);
       }
@@ -201,7 +200,7 @@ const App = () => {
   // Function to generate random HTML content for iframes
   const generateRandomHtml = useCallback(() => {
     const randomComponents = [];
-    const numberOfComponents = Math.floor(Math.random() * 5) + 1;
+    const numberOfComponents = Math.floor(Math.random() * 10) + 1;
 
     for (let i = 0; i < numberOfComponents; i++) {
       const typeIndex = Math.floor(Math.random() * subcomponentTypes.length);
@@ -366,7 +365,7 @@ const App = () => {
     if (iframeContent) {
       updateIframeContentsMapping(title, iframeContent);
     }
-  }, [iframeData, checkAndAdjustIframeSize, iframesOnCanvas, updateIframeContentsMapping]);
+  }, [iframeData, checkAndAdjustIframeSize, updateIframeContentsMapping]);
   const renderIframesInList = () => {
     return iframeData.map((iframe) => (
       <li
@@ -398,7 +397,7 @@ const App = () => {
   }, [iframeData]);
 
 
-  const addNewIframe = () => {
+  const addNewIframe = useCallback(async () => {
     const newIframeId = `iframe_${iframeIndex.current}`;
     const newIframe = {
       url: "https://example.com",
@@ -408,24 +407,25 @@ const App = () => {
       id: newIframeId,
       srcDoc: generateRandomHtml(),
     };
-    setIframeData((prevIframeData) => [...prevIframeData, newIframe]);
-    iframeIndex.current++;
-  };
+
+    // Use a Promise to delay the addition of the new iframe
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        setIframeData((prevIframeData) => [...prevIframeData, newIframe]);
+        iframeIndex.current++;
+        resolve();
+      }, 1000); // 5000 milliseconds (5 seconds) delay
+    });
+  }, [generateRandomHtml]);
 
   useEffect(() => {
     // Periodically add new iframes
     const intervalId = setInterval(addNewIframe, 5000);
 
     return () => clearInterval(intervalId);
-  }, [generateRandomHtml, addNewIframe]);
-  const handleIframeClick = (iframeTitle, event) => {
-    event.stopPropagation();
+  }, [addNewIframe]);
 
 
-    const selected = iframesOnCanvas.find(iframe => iframe.title === iframeTitle);
-    // Confirm the selected iframe
-    setSelectedIframe(selected);
-  };
   const [isEditFormVisible, setEditFormVisible] = useState(false);
 
   // Function to open the edit form
@@ -450,7 +450,7 @@ const App = () => {
 
 
   const handleSaveIframeContent = useCallback((iframeId, newContent, iframeTitle) => {
-    // console.log("Saving content for iframe:", iframeId, "Content:", newContent);
+    console.log("Saving content for iframe:", iframeId, "Content:", newContent);
 
     setIframeData(prevIframeData =>
       prevIframeData.map(iframe =>
@@ -470,7 +470,7 @@ const App = () => {
 
     setSelectedIframe(null);
     setEditFormVisible(false);
-  }, [iframeData, iframeRefs]);
+  }, [iframeRefs]);
 
   const handleQueryInputChange = (e) => {
     const query = e.target.value;
@@ -481,6 +481,7 @@ const App = () => {
 
     if (query === '') {
       // Clear suggestions when the query is empty
+      setQueriedContent(null);
       setAutofillSuggestions([]);
     } else if (parts.length === 1) {
       // Autofill iframe titles if only one part is present
@@ -504,8 +505,7 @@ const App = () => {
     }
 
     // Debugging: Log the current query and suggestions
-    console.log('Current Query:', query);
-    console.log('Autofill Suggestions:', autofillSuggestions);
+
   };
 
 
